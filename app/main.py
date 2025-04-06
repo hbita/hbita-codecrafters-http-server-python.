@@ -16,8 +16,8 @@ def handle_client(connection,directory):
             response = "HTTP/1.1 400 Bad Request\r\n\r\n"
             connection.sendall(response.encode())
             return
-        method = parts[0].decode().upper()
-        path= parts[1].decode()
+        method = parts[0].upper()
+        path= parts[1]
         headers = parse_header(data)
 
         if path.startswith("/echo/"):
