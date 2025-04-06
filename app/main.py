@@ -9,15 +9,15 @@ def handle_client(connection,directory):
         if not data:
             return
 
-        request_line = data.split("\r\n")[0]  
-        parts = request_line.split(' ')
+        request_line = data.split(b"\r\n")[0]  
+        parts = request_line.split(b' ')
         
         if len(parts) < 3:
-            response = "HTTP/1.1 400 Bad Request\r\n\r\n"
+            response = b"HTTP/1.1 400 Bad Request\r\n\r\n"
             connection.sendall(response.encode())
             return
-        method = parts[0].upper()
-        path= parts[1]
+        method = parts[0].decode().upper()
+        path= parts[1].decode()
         headers = parse_header(data)
 
         if path.startswith("/echo/"):
@@ -29,7 +29,7 @@ def handle_client(connection,directory):
                 f"\r\n{response_str}"
             )
         elif path == "/":
-            response = "HTTP/1.1 200 OK\r\n\r\n"
+            response = b"HTTP/1.1 200 OK\r\n\r\n"
         elif path == "/user-agent":
             user_agent = headers.get('User-Agent', '')
             response = (
@@ -46,8 +46,8 @@ def handle_client(connection,directory):
                          with open(filepath ,'rb') as f :
                              content=f.read()
                              headers = (
-                                 "HTTP/1.1 200 OK\r\n"
-                                 f"Content-Type: application/octet-stream\r\n"
+                                 b"HTTP/1.1 200 OK\r\n"
+                                 b"Content-Type: application/octet-stream\r\n"
                                  f"Content-Length: {len(content)}\r\n"
                                  "\r\n"
                                  )
@@ -55,11 +55,11 @@ def handle_client(connection,directory):
                              connection.sendall(headers_bytes + content)
                              return
                      else :
-                         response = "HTTP/1.1 404 Not Found\r\n\r\n"
+                         response = b"HTTP/1.1 404 Not Found\r\n\r\n"
                 elif method =="POST" :
-                     header_body_split = data.split("\r\n\r\n", 1)
+                     header_body_split = data.split(b"\r\n\r\n", 1)
                      if len(header_body_split) < 2:
-                          response ="HTTP/1.1 400 Bad Request\r\n\r\n"
+                          response =b"HTTP/1.1 400 Bad Request\r\n\r\n"
                           connection.sendall(response)
                           return
                      body = header_body_split[1]
@@ -67,15 +67,15 @@ def handle_client(connection,directory):
                      body = body[:content_length]
                      with open(filepath, 'wb') as f:
                           f.write(body)
-                          response ="HTTP/1.1 201 Created\r\n\r\n"
+                          response =b"HTTP/1.1 201 Created\r\n\r\n"
                           connection.sendall(response)
                           return
                 else :
-                     response ="HTTP/1.1 405 Method Not Allowed\r\n\r\n"
+                     response =b"HTTP/1.1 405 Method Not Allowed\r\n\r\n"
             else :
                  response = b"HTTP/1.1 405 Method Not Allowed\r\n\r\n"
         else:  
-             response = "HTTP/1.1 404 Not Found\r\n\r\n"
+             response = b"HTTP/1.1 404 Not Found\r\n\r\n"
 
         connection.sendall(response.encode())
     finally:
@@ -83,12 +83,12 @@ def handle_client(connection,directory):
 
 def parse_header(data):
     headers = {}
-    lines = data.split("\r\n")[1:]
+    lines = data.split(b"\r\n")[1:]
     for line in lines:
         if not line:
             break
         try :
-             key, value = line.split(":", 1)
+             key, value = line.split(b":", 1)
              headers[key.decode().lower()] = value.strip().decode()
         except ValueError:
              continue
