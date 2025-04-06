@@ -18,7 +18,7 @@ def main():
     connection, address = server_socket.accept()
     data = connection.recv(1024).decode()
     request_line = data.split("\n\r")[0]
-    method,path ,_ =request_line.split(" ",2)
+    method,path ,_ =request_line.split("",2)
     headers =parse_header(data)
     if path.startswith("/echo/"):
          response_str = path.split("/echo/")[1]
@@ -32,7 +32,7 @@ def main():
     elif path == "/":
          response="HTTP/1.1 200 OK\r\n\r\n"
     elif path =="/user-agent" :
-          user_agent = headers.get('User-Agent', '')
+          user_agent = headers.get('User-Agent','')
           response = (
             f"HTTP/1.1 200 OK\r\n"
             f"Content-Type: text/plain\r\n"
