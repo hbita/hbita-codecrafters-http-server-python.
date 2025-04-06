@@ -1,7 +1,9 @@
 import socket
-import threading
+import threading 
+import argparse 
+import os
 
-def handle_client(connection):
+def handle_client(connection,directory):
     try:
         data = connection.recv(1024).decode()
         if not data:
@@ -35,6 +37,23 @@ def handle_client(connection):
                 f"Content-Type: text/plain\r\n"
                 f"Content-Length: {len(user_agent)}\r\n"
                 f"\r\n{user_agent}")
+        elif path.startswitch("/files/") :
+            filename=path.split("files/")[1]
+            if directory :
+                filepath =os.path.join(directory,filename)
+                if os.path.isfile(filepath) :
+                    with open(filepath ,'rb') as f :
+                        content=f.read()
+                    headers = (
+                        "HTTP/1.1 200 OK\r\n"
+                        f"Content-Type: application/octet-stream\r\n"
+                        f"Content-Length: {len(content)}\r\n"
+                        "\r\n"
+                    )
+                    headers_bytes = headers.encode()
+                    connection.sendall(headers_bytes + content)
+                    return
+            response = "HTTP/1.1 404 Not Found\r\n\r\n"
         else:  
             response = "HTTP/1.1 404 Not Found\r\n\r\n"
 
@@ -54,11 +73,15 @@ def parse_header(data):
 
 def main():
     print("Logs from your program will appear here!")
+    parser = argparse.ArgumentParser() 
+    parser.add_argument('--directory', type=str)  
+    args, _ = parser.parse_known_args() 
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
+
     try:
         while True:
             connection, _ = server_socket.accept()
-            thread = threading.Thread(target=handle_client, args=(connection,))
+            thread = threading.Thread(target=handle_client, args=(connection,args.directory))
             thread.start()
     except KeyboardInterrupt:
         server_socket.close()
