@@ -18,7 +18,7 @@ def main():
     connection, address = server_socket.accept()
     data = connection.recv(1024).decode()
     request_line = data.split("\n\r")[0]
-    method,path ,_ =request_line.split("",2)
+    method,path ,_ =request_line.split(" ",2)
     headers =parse_header(data)
     if path.startswith("/echo/"):
          response_str = path.split("/echo/")[1]
