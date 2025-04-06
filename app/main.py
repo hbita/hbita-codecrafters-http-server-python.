@@ -37,7 +37,7 @@ def handle_client(connection,directory):
                 f"Content-Type: text/plain\r\n"
                 f"Content-Length: {len(user_agent)}\r\n"
                 f"\r\n{user_agent}")
-        elif path.startswitch("/files/") :
+        elif path.startswith("/files/") :
             filename=path.split("files/")[1]
             if directory :
                 filepath =os.path.join(directory,filename)
