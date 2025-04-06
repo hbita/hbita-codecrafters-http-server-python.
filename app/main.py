@@ -46,8 +46,8 @@ def handle_client(connection,directory):
                          with open(filepath ,'rb') as f :
                              content=f.read()
                              headers = (
-                                 b"HTTP/1.1 200 OK\r\n"
-                                 b"Content-Type: application/octet-stream\r\n"
+                                 f"HTTP/1.1 200 OK\r\n"
+                                 f"Content-Type: application/octet-stream\r\n"
                                  f"Content-Length: {len(content)}\r\n"
                                  "\r\n")
                              headers_bytes = headers.encode()
