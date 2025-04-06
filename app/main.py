@@ -7,7 +7,7 @@ def parse_header(data):
           if not line :
                break
           key ,value =line.split(":",1)
-          headers[key]=value
+          headers[key]=value.strip()
      return headers
 
 def main():
