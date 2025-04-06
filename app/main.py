@@ -49,8 +49,7 @@ def handle_client(connection,directory):
                                  b"HTTP/1.1 200 OK\r\n"
                                  b"Content-Type: application/octet-stream\r\n"
                                  f"Content-Length: {len(content)}\r\n"
-                                 "\r\n"
-                                 )
+                                 "\r\n")
                              headers_bytes = headers.encode()
                              connection.sendall(headers_bytes + content)
                              return
