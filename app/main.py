@@ -127,8 +127,8 @@ def handle_files(path, method, headers, body, directory):
                     b"HTTP/1.1 200 OK\r\n"
                     + connection_header +
                     b"Content-Type: application/octet-stream\r\n"
-                    f"Content-Length: {len(content)}\r\n\r\n".encode()
-                    + content
+                  + f"Content-Length: {len(content)}\r\n\r\n".encode()
+                  + content
                 )
         else:
             return b"HTTP/1.1 404 Not Found\r\n\r\n"
