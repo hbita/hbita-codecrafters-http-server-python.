@@ -22,9 +22,15 @@ def handle_client(connection, directory):
 
         if path.startswith("/echo/"):
             response_str = path.split("/echo/")[1]
+            # Check Accept-Encoding for gzip support
+            accept_encoding = headers.get('accept-encoding', '')
+            encodings = [e.strip().lower() for e in accept_encoding.split(',')]
+            content_encoding = 'Content-Encoding: gzip\r\n' if 'gzip' in encodings else ''
+            
             response = (
                 f"HTTP/1.1 200 OK\r\n"
                 f"Content-Type: text/plain\r\n"
+                f"{content_encoding}"
                 f"Content-Length: {len(response_str)}\r\n"
                 f"\r\n{response_str}"
             )
@@ -41,7 +47,7 @@ def handle_client(connection, directory):
                 f"\r\n{user_agent}")
             connection.sendall(response.encode())
         elif path.startswith("/files/"):
-            filename = path.split("/files/")[1]
+            filename = os.path.basename(path.split("/files/")[1])
             if directory:
                 filepath = os.path.join(directory, filename)
                 if method == "GET":
@@ -60,6 +66,10 @@ def handle_client(connection, directory):
                         response = b"HTTP/1.1 404 Not Found\r\n\r\n"
                         connection.sendall(response)
                 elif method == "POST":
+                    if 'content-length' not in headers:
+                        response = b"HTTP/1.1 400 Bad Request\r\n\r\n"
+                        connection.sendall(response)
+                        return
                     header_body_split = data.split(b"\r\n\r\n", 1)
                     if len(header_body_split) < 2:
                         response = b"HTTP/1.1 400 Bad Request\r\n\r\n"
@@ -73,7 +83,10 @@ def handle_client(connection, directory):
                         response = b"HTTP/1.1 201 Created\r\n\r\n"
                         connection.sendall(response)
                 else:
-                    response = b"HTTP/1.1 405 Method Not Allowed\r\n\r\n"
+                    response = (
+                        b"HTTP/1.1 405 Method Not Allowed\r\n"
+                        b"Allow: GET, POST\r\n\r\n"
+                    )
                     connection.sendall(response)
             else:
                 response = b"HTTP/1.1 405 Method Not Allowed\r\n\r\n"
