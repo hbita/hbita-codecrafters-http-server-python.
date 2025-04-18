@@ -2,7 +2,7 @@ import socket
 import threading 
 import argparse 
 import os
-
+import gzip
 def handle_client(connection, directory):
     try:
         data = connection.recv(1024)
@@ -22,19 +22,24 @@ def handle_client(connection, directory):
 
         if path.startswith("/echo/"):
             response_str = path.split("/echo/")[1]
-            # Check Accept-Encoding for gzip support
             accept_encoding = headers.get('accept-encoding', '')
             encodings = [e.strip().lower() for e in accept_encoding.split(',')]
-            content_encoding = 'Content-Encoding: gzip\r\n' if 'gzip' in encodings else ''
-            
-            response = (
-                f"HTTP/1.1 200 OK\r\n"
-                f"Content-Type: text/plain\r\n"
-                f"{content_encoding}"
-                f"Content-Length: {len(response_str)}\r\n"
-                f"\r\n{response_str}"
+            if 'gzip' in encodings:
+                compressed_body = gzip.compress(response_str.encode())
+                content_encoding = b"Content-Encoding: gzip\r\n"
+                content_length = len(compressed_body)
+                body = compressed_body
+            else :
+                 body = response_str.encode()
+                 content_encoding = b""
+                 content_length = len(body)
+            response_headers = (
+                b"HTTP/1.1 200 OK\r\n"
+                b"Content-Type: text/plain\r\n"
+                + content_encoding +
+                f"Content-Length: {content_length}\r\n\r\n".encode()
             )
-            connection.sendall(response.encode())
+            connection.sendall(response_headers + body)
         elif path == "/":
             response = b"HTTP/1.1 200 OK\r\n\r\n"
             connection.sendall(response)
